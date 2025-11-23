@@ -5,6 +5,7 @@ export const styles = StyleSheet.create({
   container: {
     backgroundColor: colors.background,
     padding: spacing.md,
+    paddingBottom: spacing.sm,
   },
   monthHeader: {
     flexDirection: 'row',
@@ -50,11 +51,11 @@ export const styles = StyleSheet.create({
     flexWrap: 'wrap',
   },
   dayCell: {
-    width: '14.28%',
+    width: '14.28%', // 100% / 7 days = 14.28% per day
     aspectRatio: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    marginVertical: spacing.xs,
+    marginTop: spacing.xs,
   },
   dayText: {
     ...typography.body,

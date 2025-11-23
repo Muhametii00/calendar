@@ -14,11 +14,20 @@ export default function LoginScreen() {
   const [isLoading, setIsLoading] = useState(false);
 
   const handleLogin = async () => {
+    if (!email.trim() || !password.trim()) {
+      Alert.alert('Error', 'Please enter both email and password');
+      return;
+    }
+
     setIsLoading(true);
     try {
       await login(email, password);
-    } catch (error) {
-      Alert.alert('Error', 'Login failed. Please try again.');
+    } catch (error: any) {
+      const errorMessage =
+        error?.message === 'Biometric verification failed'
+          ? 'Biometric verification is required to complete login. Please try again.'
+          : 'Login failed. Please try again.';
+      Alert.alert('Error', errorMessage);
     } finally {
       setIsLoading(false);
     }
