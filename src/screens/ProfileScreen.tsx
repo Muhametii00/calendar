@@ -1,14 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  ActivityIndicator,
-} from 'react-native';
-import Header from '../components/Header';
+import { View, Text, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { Header } from '../components';
 import { useAuth } from '../context/AuthContext';
-import { colors, spacing, typography } from '../constants/theme';
+import { styles } from '../styles/ProfileScreenStyles';
+import { colors } from '../constants/theme';
 
 export default function ProfileScreen() {
   const { logout, isLoading } = useAuth();
@@ -70,50 +65,3 @@ export default function ProfileScreen() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background,
-  },
-  content: {
-    padding: spacing.lg,
-  },
-  sectionTitle: {
-    ...typography.subtitle,
-    marginBottom: spacing.md,
-    color: colors.text.primary,
-    fontSize: 20,
-    fontWeight: '600',
-  },
-  profileRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: spacing.xl,
-  },
-  label: {
-    ...typography.body,
-    fontWeight: '500',
-    color: colors.text.secondary,
-    marginRight: spacing.md,
-    width: 72,
-  },
-  value: {
-    ...typography.body,
-    color: colors.text.primary,
-    flex: 1,
-  },
-  logoutButton: {
-    backgroundColor: colors.primary,
-    paddingVertical: spacing.md,
-    borderRadius: 8,
-    alignItems: 'center',
-    marginTop: spacing.lg,
-  },
-  logoutButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
-    letterSpacing: 0.5,
-  },
-});

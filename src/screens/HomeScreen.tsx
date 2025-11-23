@@ -1,29 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import {
-  View,
-  StyleSheet,
-  Text,
-  ActivityIndicator,
-  ScrollView,
-} from 'react-native';
+import { View, Text, ActivityIndicator, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import Header from '../components/Header';
-import Calendar from '../components/Calendar';
-import EventsList, { Event } from '../components/EventsList';
-import {
-  colors,
-  spacing,
-  typography,
-  borderRadius,
-  shadows,
-} from '../constants/theme';
+import { Header, Calendar, EventsList, Event } from '../components';
+import { colors } from '../constants/theme';
+import { styles } from '../styles/HomeScreenStyles';
 import {
   getEventsForDate,
   initializeSampleEvents,
 } from '../utils/eventsService';
 
 export default function HomeScreen() {
-  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [events, setEvents] = useState<Event[]>([]);
   const [isLoadingEvents, setIsLoadingEvents] = useState(false);
 
@@ -74,47 +61,3 @@ export default function HomeScreen() {
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background,
-  },
-  contentContainer: {
-    paddingBottom: spacing.sm,
-  },
-  eventsSection: {
-    marginTop: spacing.sm,
-  },
-  settingsContainer: {
-    flex: 1,
-    padding: spacing.lg,
-    minHeight: 500,
-  },
-  logoutButton: {
-    height: 52,
-    backgroundColor: '#FF3B30',
-    borderRadius: borderRadius.md,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: spacing.xl,
-    ...shadows.button,
-  },
-  logoutButtonText: {
-    ...typography.body,
-    fontWeight: '600',
-    color: colors.text.inverse,
-  },
-  loaderContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: spacing.xl,
-    minHeight: 200,
-  },
-  loaderText: {
-    ...typography.subtitle,
-    color: colors.text.secondary,
-    marginTop: spacing.md,
-  },
-});
