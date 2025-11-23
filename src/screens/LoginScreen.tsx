@@ -18,6 +18,7 @@ import {
   borderRadius,
   shadows,
 } from '../constants/theme';
+import { useAuth } from '../context/AuthContext';
 
 interface LoginScreenProps {
   navigation: LoginScreenNavigationProp;
@@ -27,6 +28,7 @@ export default function LoginScreen({ navigation }: LoginScreenProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const { login } = useAuth();
 
   const handleLogin = async () => {
     if (!email.trim() || !password.trim()) {
@@ -35,14 +37,13 @@ export default function LoginScreen({ navigation }: LoginScreenProps) {
     }
 
     setIsLoading(true);
-    //authentication logic here
-
-    //time out will be removed later
-    setTimeout(() => {
+    try {
+      await login(email, password);
+    } catch (error) {
+      Alert.alert('Error', 'Login failed. Please try again.');
+    } finally {
       setIsLoading(false);
-      Alert.alert('Success', 'Login successful!');
-      // navigate to dashboard screen
-    }, 1000);
+    }
   };
 
   return (

@@ -45,6 +45,7 @@ export const borderRadius = {
   sm: 8,
   md: 12,
   lg: 16,
+  xl: 30,
 };
 
 export const shadows = {
@@ -59,4 +60,3 @@ export const shadows = {
     elevation: 8,
   },
 };
-
