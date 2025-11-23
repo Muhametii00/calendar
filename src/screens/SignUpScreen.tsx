@@ -11,12 +11,20 @@ import {
   ScrollView,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { SignUpScreenNavigationProp } from '../navigation/types';
+import {
+  colors,
+  spacing,
+  typography,
+  borderRadius,
+  shadows,
+} from '../constants/theme';
 
 interface SignUpScreenProps {
-  onNavigateToLogin?: () => void;
+  navigation: SignUpScreenNavigationProp;
 }
 
-export default function SignUpScreen({ onNavigateToLogin }: SignUpScreenProps) {
+export default function SignUpScreen({ navigation }: SignUpScreenProps) {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -51,9 +59,7 @@ export default function SignUpScreen({ onNavigateToLogin }: SignUpScreenProps) {
       setIsLoading(false);
       Alert.alert('Success', 'Account created successfully!');
       // Navigate to login or main app screen here
-      if (onNavigateToLogin) {
-        onNavigateToLogin();
-      }
+      navigation.navigate('Login');
     }, 1000);
   };
 
@@ -148,7 +154,7 @@ export default function SignUpScreen({ onNavigateToLogin }: SignUpScreenProps) {
 
             <View style={styles.footer}>
               <Text style={styles.footerText}>Already have an account? </Text>
-              <TouchableOpacity onPress={onNavigateToLogin}>
+              <TouchableOpacity onPress={() => navigation.goBack()}>
                 <Text style={styles.signInText}>Sign In</Text>
               </TouchableOpacity>
             </View>
@@ -162,7 +168,7 @@ export default function SignUpScreen({ onNavigateToLogin }: SignUpScreenProps) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: colors.background,
   },
   keyboardView: {
     flex: 1,
@@ -172,82 +178,73 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    paddingHorizontal: 24,
-    paddingVertical: 32,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.xl,
     justifyContent: 'center',
   },
   header: {
-    marginBottom: 48,
+    marginBottom: spacing.xxl,
     alignItems: 'center',
   },
   title: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: '#1a1a1a',
-    marginBottom: 8,
+    ...typography.title,
+    color: colors.text.primary,
+    marginBottom: spacing.sm,
   },
   subtitle: {
-    fontSize: 16,
-    color: '#666',
+    ...typography.subtitle,
+    color: colors.text.secondary,
   },
   form: {
     width: '100%',
   },
   inputContainer: {
-    marginBottom: 20,
+    marginBottom: spacing.md + 4,
   },
   label: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#333',
-    marginBottom: 8,
+    ...typography.label,
+    color: colors.text.primary,
+    marginBottom: spacing.sm,
   },
   input: {
     height: 52,
     borderWidth: 1,
-    borderColor: '#e0e0e0',
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    fontSize: 16,
-    backgroundColor: '#f9f9f9',
-    color: '#1a1a1a',
+    borderColor: colors.border,
+    borderRadius: borderRadius.md,
+    paddingHorizontal: spacing.md,
+    fontSize: typography.body.fontSize,
+    backgroundColor: colors.inputBackground,
+    color: colors.text.primary,
   },
   signUpButton: {
     height: 52,
-    backgroundColor: '#007AFF',
-    borderRadius: 12,
+    backgroundColor: colors.primary,
+    borderRadius: borderRadius.md,
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 8,
-    shadowColor: '#007AFF',
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.3,
-    shadowRadius: 4.65,
-    elevation: 8,
+    marginTop: spacing.sm,
+    ...shadows.button,
   },
   signUpButtonDisabled: {
     opacity: 0.6,
   },
   signUpButtonText: {
-    fontSize: 16,
+    ...typography.body,
     fontWeight: '600',
-    color: '#fff',
+    color: colors.text.inverse,
   },
   footer: {
     flexDirection: 'row',
     justifyContent: 'center',
-    marginTop: 32,
+    marginTop: spacing.xl,
   },
   footerText: {
-    fontSize: 14,
-    color: '#666',
+    ...typography.small,
+    color: colors.text.secondary,
   },
   signInText: {
-    fontSize: 14,
-    color: '#007AFF',
+    ...typography.small,
+    color: colors.primary,
     fontWeight: '600',
   },
 });

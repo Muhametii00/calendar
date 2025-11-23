@@ -10,12 +10,20 @@ import {
   Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { LoginScreenNavigationProp } from '../navigation/types';
+import {
+  colors,
+  spacing,
+  typography,
+  borderRadius,
+  shadows,
+} from '../constants/theme';
 
 interface LoginScreenProps {
-  onNavigateToSignUp?: () => void;
+  navigation: LoginScreenNavigationProp;
 }
 
-export default function LoginScreen({ onNavigateToSignUp }: LoginScreenProps) {
+export default function LoginScreen({ navigation }: LoginScreenProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -79,18 +87,6 @@ export default function LoginScreen({ onNavigateToSignUp }: LoginScreenProps) {
             </View>
 
             <TouchableOpacity
-              style={styles.forgotPassword}
-              onPress={() => {
-                Alert.alert(
-                  'Forgot Password',
-                  'Password reset functionality coming soon!',
-                );
-              }}
-            >
-              <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
               style={[
                 styles.loginButton,
                 isLoading && styles.loginButtonDisabled,
@@ -106,7 +102,7 @@ export default function LoginScreen({ onNavigateToSignUp }: LoginScreenProps) {
 
           <View style={styles.footer}>
             <Text style={styles.footerText}>Don't have an account? </Text>
-            <TouchableOpacity onPress={onNavigateToSignUp}>
+            <TouchableOpacity onPress={() => navigation.navigate('SignUp')}>
               <Text style={styles.signUpText}>Sign Up</Text>
             </TouchableOpacity>
           </View>
@@ -119,96 +115,87 @@ export default function LoginScreen({ onNavigateToSignUp }: LoginScreenProps) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: colors.background,
   },
   keyboardView: {
     flex: 1,
   },
   content: {
     flex: 1,
-    paddingHorizontal: 24,
+    paddingHorizontal: spacing.lg,
     justifyContent: 'center',
   },
   header: {
-    marginBottom: 48,
+    marginBottom: spacing.xxl,
     alignItems: 'center',
   },
   title: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: '#1a1a1a',
-    marginBottom: 8,
+    ...typography.title,
+    color: colors.text.primary,
+    marginBottom: spacing.sm,
   },
   subtitle: {
-    fontSize: 16,
-    color: '#666',
+    ...typography.subtitle,
+    color: colors.text.secondary,
   },
   form: {
     width: '100%',
   },
   inputContainer: {
-    marginBottom: 20,
+    marginBottom: spacing.md + 4,
   },
   label: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#333',
-    marginBottom: 8,
+    ...typography.label,
+    color: colors.text.primary,
+    marginBottom: spacing.sm,
   },
   input: {
     height: 52,
     borderWidth: 1,
-    borderColor: '#e0e0e0',
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    fontSize: 16,
-    backgroundColor: '#f9f9f9',
-    color: '#1a1a1a',
+    borderColor: colors.border,
+    borderRadius: borderRadius.md,
+    paddingHorizontal: spacing.md,
+    fontSize: typography.body.fontSize,
+    backgroundColor: colors.inputBackground,
+    color: colors.text.primary,
   },
   forgotPassword: {
     alignSelf: 'flex-end',
-    marginBottom: 24,
+    marginBottom: spacing.lg,
   },
   forgotPasswordText: {
-    fontSize: 14,
-    color: '#007AFF',
+    ...typography.small,
+    color: colors.primary,
     fontWeight: '500',
   },
   loginButton: {
     height: 52,
-    backgroundColor: '#007AFF',
-    borderRadius: 12,
+    backgroundColor: colors.primary,
+    borderRadius: borderRadius.md,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#007AFF',
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.3,
-    shadowRadius: 4.65,
-    elevation: 8,
+    ...shadows.button,
   },
   loginButtonDisabled: {
     opacity: 0.6,
   },
   loginButtonText: {
-    fontSize: 16,
+    ...typography.body,
     fontWeight: '600',
-    color: '#fff',
+    color: colors.text.inverse,
   },
   footer: {
     flexDirection: 'row',
     justifyContent: 'center',
-    marginTop: 32,
+    marginTop: spacing.xl,
   },
   footerText: {
-    fontSize: 14,
-    color: '#666',
+    ...typography.small,
+    color: colors.text.secondary,
   },
   signUpText: {
-    fontSize: 14,
-    color: '#007AFF',
+    ...typography.small,
+    color: colors.primary,
     fontWeight: '600',
   },
 });
