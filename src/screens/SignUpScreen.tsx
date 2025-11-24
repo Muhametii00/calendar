@@ -13,6 +13,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { SignUpScreenNavigationProp as SignUpScreenNavigationPropType } from '../navigation/types';
 import { styles } from '../styles/SignUpScreenStyles';
 import { useNavigation } from '@react-navigation/native';
+import { useAuth } from '../context/AuthContext';
 
 export default function SignUpScreen() {
   const navigation = useNavigation<SignUpScreenNavigationPropType>();
@@ -21,6 +22,7 @@ export default function SignUpScreen() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const { signUp } = useAuth();
 
   const handleSignUp = async () => {
     if (
@@ -44,14 +46,18 @@ export default function SignUpScreen() {
     }
 
     setIsLoading(true);
-    // TODO: Implement your sign up logic here
-    // For now, just simulate a sign up
-    setTimeout(() => {
-      setIsLoading(false);
+    try {
+      await signUp(email, password, name);
       Alert.alert('Success', 'Account created successfully!');
-      // Navigate to login or main app screen here
-      navigation.navigate('Login');
-    }, 1000);
+      // Navigation will happen automatically via auth state change
+    } catch (error: any) {
+      Alert.alert(
+        'Error',
+        error.message || 'Sign up failed. Please try again.',
+      );
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (

@@ -13,25 +13,12 @@ export default function BiometricBlurOverlay({
     return null;
   }
 
-  if (Platform.OS === 'ios') {
-    return (
-      <BlurView
-        style={StyleSheet.absoluteFill}
-        blurType="dark"
-        blurAmount={10}
-        reducedTransparencyFallbackColor="rgba(0, 0, 0, 0.8)"
-      />
-    );
-  }
-
-  // For Android, use a semi-transparent overlay since BlurView may not work as well
   return (
-    <View
-      style={[
-        StyleSheet.absoluteFill,
-        { backgroundColor: 'rgba(0, 0, 0, 0.8)' },
-      ]}
+    <BlurView
+      style={StyleSheet.absoluteFill}
+      blurType="dark"
+      blurAmount={10}
+      reducedTransparencyFallbackColor="rgba(0, 0, 0, 0.8)"
     />
   );
 }
-

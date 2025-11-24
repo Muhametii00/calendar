@@ -1,4 +1,10 @@
-import React, { createContext, useState, useContext, useEffect, useRef } from 'react';
+import React, {
+  createContext,
+  useState,
+  useContext,
+  useEffect,
+  useRef,
+} from 'react';
 import { AppState, AppStateStatus } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
@@ -6,10 +12,13 @@ import {
   isBiometricAvailable,
 } from '../utils/biometricsService';
 import BiometricBlurOverlay from '../components/BiometricBlurOverlay';
+import auth from '@react-native-firebase/auth';
 
 interface AuthContextType {
   isAuthenticated: boolean;
+  user: any | null;
   login: (email: string, password: string) => Promise<void>;
+  signUp: (email: string, password: string, name: string) => Promise<void>;
   logout: () => Promise<void>;
   isLoading: boolean;
   authenticateWithBiometrics: () => Promise<boolean>;
@@ -24,15 +33,34 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [showBiometricBlur, setShowBiometricBlur] = useState(false);
   const appState = useRef(AppState.currentState);
   const biometricPromptShown = useRef(false);
+  const [user, setUser] = useState<any | null>(null);
 
   useEffect(() => {
-    // Check if user is already logged in
-    checkAuthStatus();
+    const unsubscribe = auth().onAuthStateChanged(async firebaseUser => {
+      if (firebaseUser) {
+        setUser(firebaseUser);
+        setIsAuthenticated(true);
+        const shouldPerformBiometrics = await AsyncStorage.getItem(
+          'biometricEnabled',
+        );
+        if (shouldPerformBiometrics === 'true') {
+          await performBiometricAuth();
+        }
+      } else {
+        setUser(null);
+        setIsAuthenticated(false);
+      }
+      setIsLoading(false);
+    });
+
+    return unsubscribe;
   }, []);
 
   useEffect(() => {
-    // Listen for app state changes to trigger biometrics when app comes to foreground
-    const subscription = AppState.addEventListener('change', handleAppStateChange);
+    const subscription = AppState.addEventListener(
+      'change',
+      handleAppStateChange,
+    );
 
     return () => {
       subscription.remove();
@@ -40,92 +68,65 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [isAuthenticated]);
 
   const handleAppStateChange = async (nextAppState: AppStateStatus) => {
-    // Reset biometric prompt flag when app goes to background
-    if (appState.current === 'active' && nextAppState.match(/inactive|background/)) {
+    if (
+      appState.current === 'active' &&
+      nextAppState.match(/inactive|background/)
+    ) {
       biometricPromptShown.current = false;
     }
-    
-    // When app comes to foreground and user is authenticated, prompt for biometrics
+
     if (
       appState.current.match(/inactive|background/) &&
       nextAppState === 'active' &&
       isAuthenticated &&
       !biometricPromptShown.current
     ) {
-      // App has come to the foreground and user is authenticated
       await performBiometricAuth();
     }
     appState.current = nextAppState;
   };
 
-  const checkAuthStatus = async () => {
-    try {
-      const token = await AsyncStorage.getItem('authToken');
-      const hasToken = !!token;
-      setIsAuthenticated(hasToken);
-      
-      // If user is logged in, perform biometric authentication
-      if (hasToken) {
-        await performBiometricAuth();
-      }
-    } catch (error) {
-      console.error('Error checking auth status:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   const performBiometricAuth = async () => {
     try {
-      // Show blur overlay before biometric prompt
       setShowBiometricBlur(true);
-      
-      // Small delay to ensure blur is visible
-      await new Promise(resolve => setTimeout(resolve, 100));
+
+      await new Promise<void>(resolve => setTimeout(resolve, 100));
 
       const available = await isBiometricAvailable();
       if (!available) {
-        // Biometrics not available, allow access
         setShowBiometricBlur(false);
         biometricPromptShown.current = true;
         return;
       }
 
       const result = await authenticateWithBiometrics(
-        'Authenticate to access your calendar'
+        'Authenticate to access your calendar',
       );
 
-      // Hide blur overlay after authentication attempt
       setShowBiometricBlur(false);
 
       if (!result.success) {
-        // Biometric authentication failed, log out user
         await logout();
       } else {
         biometricPromptShown.current = true;
       }
     } catch (error) {
       console.error('Error performing biometric auth:', error);
-      // Hide blur on error
       setShowBiometricBlur(false);
-      // On error, log out for security
       await logout();
     }
   };
 
   const handleBiometricAuth = async (): Promise<boolean> => {
     try {
-      // Show blur overlay before biometric prompt
       setShowBiometricBlur(true);
-      
-      // Small delay to ensure blur is visible
-      await new Promise(resolve => setTimeout(resolve, 100));
+
+      await new Promise<void>(resolve => setTimeout(resolve, 100));
 
       const result = await authenticateWithBiometrics(
-        'Authenticate to continue'
+        'Authenticate to continue',
       );
 
-      // Hide blur overlay after authentication attempt
       setShowBiometricBlur(false);
 
       return result.success;
@@ -137,55 +138,112 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const login = async (email: string, password: string) => {
-    // In a real app, you would make an API call here
-    // For now, we'll just store a token
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
-      // Store auth token temporarily
-      await AsyncStorage.setItem('authToken', 'dummy-token');
+      await auth().signInWithEmailAndPassword(email, password);
       await AsyncStorage.setItem('userEmail', email);
-      
-      // After email/password login, verify with biometrics
+
       const available = await isBiometricAvailable();
       if (available) {
-        // Show blur overlay before biometric prompt
         setShowBiometricBlur(true);
-        
-        // Small delay to ensure blur is visible
-        await new Promise(resolve => setTimeout(resolve, 100));
+        await new Promise<void>(resolve => setTimeout(resolve, 100));
 
         const result = await authenticateWithBiometrics(
-          'Verify your identity with biometrics'
+          'Authenticate to access your calendar',
         );
 
-        // Hide blur overlay after authentication attempt
         setShowBiometricBlur(false);
 
         if (!result.success) {
-          // If biometric verification fails, clean up and don't complete login
-          await AsyncStorage.removeItem('authToken');
-          await AsyncStorage.removeItem('userEmail');
+          await logout();
           throw new Error('Biometric verification failed');
+        } else {
+          await AsyncStorage.setItem('biometricEnabled', 'true');
         }
       }
-      
-      setIsAuthenticated(true);
+
       biometricPromptShown.current = true;
-    } catch (error) {
-      // Hide blur on error
+    } catch (error: any) {
       setShowBiometricBlur(false);
       console.error('Login error:', error);
-      throw error;
+
+      let errorMessage = 'Login failed. Please try again.';
+
+      if (error?.code === 'auth/user-not-found') {
+        errorMessage = 'No account found with this email.';
+      } else if (error?.code === 'auth/wrong-password') {
+        errorMessage = 'Incorrect password.';
+      } else if (error?.code === 'auth/invalid-email') {
+        errorMessage = 'Invalid email address.';
+      } else if (error?.code === 'auth/invalid-credential') {
+        errorMessage = 'Invalid email or password.';
+      } else if (error?.code === 'auth/too-many-requests') {
+        errorMessage = 'Too many failed attempts. Please try again later.';
+      } else if (error?.code === 'auth/network-request-failed') {
+        errorMessage = 'Network error. Please check your connection.';
+      } else if (error?.message === 'Biometric verification failed') {
+        errorMessage =
+          'Biometric verification is required to complete login. Please try again.';
+      } else if (error?.message) {
+        errorMessage = error.message;
+      }
+
+      throw new Error(errorMessage);
+    }
+  };
+
+  const signUp = async (email: string, password: string, name: string) => {
+    try {
+      const userCredential = await auth().createUserWithEmailAndPassword(
+        email,
+        password,
+      );
+      await userCredential.user.updateProfile({
+        displayName: name,
+      });
+
+      await AsyncStorage.setItem('userEmail', email);
+
+      const available = await isBiometricAvailable();
+      if (available) {
+        setShowBiometricBlur(true);
+        await new Promise<void>(resolve => setTimeout(resolve, 100));
+
+        const result = await authenticateWithBiometrics(
+          'Authenticate to access your calendar',
+        );
+
+        setShowBiometricBlur(false);
+
+        if (result.success) {
+          await AsyncStorage.setItem('biometricEnabled', 'true');
+        }
+      }
+
+      biometricPromptShown.current = true;
+    } catch (error: any) {
+      setShowBiometricBlur(false);
+      console.error('Sign up error:', error);
+
+      let errorMessage = 'Sign up failed. Please try again.';
+      if (error.code === 'auth/email-already-in-use') {
+        errorMessage = 'An account with this email already exists.';
+      } else if (error.code === 'auth/invalid-email') {
+        errorMessage = 'Invalid email address.';
+      } else if (error.code === 'auth/weak-password') {
+        errorMessage = 'Password should be at least 6 characters.';
+      }
+
+      throw new Error(errorMessage);
     }
   };
 
   const logout = async () => {
     try {
-      await AsyncStorage.removeItem('authToken');
+      await auth().signOut();
       await AsyncStorage.removeItem('userEmail');
+      await AsyncStorage.removeItem('biometricEnabled');
       setIsAuthenticated(false);
+      setUser(null);
       biometricPromptShown.current = false;
       setShowBiometricBlur(false);
     } catch (error) {
@@ -197,7 +255,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     <AuthContext.Provider
       value={{
         isAuthenticated,
+        user,
         login,
+        signUp,
         logout,
         isLoading,
         authenticateWithBiometrics: handleBiometricAuth,

@@ -12,7 +12,7 @@ export interface BiometricResult {
 // Check if biometrics is available on the device
 export async function isBiometricAvailable(): Promise<boolean> {
   try {
-    const { available, biometryType } = await rnBiometrics.isSensorAvailable();
+    const { available } = await rnBiometrics.isSensorAvailable();
     return available;
   } catch (error) {
     console.error('Error checking biometric availability:', error);
@@ -32,7 +32,6 @@ export async function getBiometricType(): Promise<string | null> {
   }
 }
 
-// Prompt user for biometric authentication
 export async function authenticateWithBiometrics(
   promptMessage: string = 'Authenticate to continue',
 ): Promise<BiometricResult> {

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { View, Text, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { Header } from '../components';
 import { useAuth } from '../context/AuthContext';
@@ -6,29 +6,14 @@ import { styles } from '../styles/ProfileScreenStyles';
 import { colors } from '../constants/theme';
 
 export default function ProfileScreen() {
-  const { logout, isLoading } = useAuth();
-  const [email, setEmail] = useState<string | null>(null);
-  const [loadingEmail, setLoadingEmail] = useState(true);
-
-  useEffect(() => {
-    const fetchEmail = async () => {
-      try {
-        const storedEmail = await (
-          await import('@react-native-async-storage/async-storage')
-        ).default.getItem('userEmail');
-        setEmail(storedEmail);
-      } catch (error) {
-        setEmail(null);
-      } finally {
-        setLoadingEmail(false);
-      }
-    };
-    fetchEmail();
-  }, []);
+  const { logout, isLoading, user } = useAuth();
 
   const handleLogout = async () => {
     await logout();
   };
+
+  const fullName = user?.displayName || user?.email?.split('@')[0] || 'User';
+  const userEmail = user?.email || 'N/A';
 
   return (
     <View style={styles.container}>
@@ -37,18 +22,18 @@ export default function ProfileScreen() {
         <Text style={styles.sectionTitle}>Account Info</Text>
         <View style={styles.profileRow}>
           <Text style={styles.label}>Name:</Text>
-          {loadingEmail ? (
+          {isLoading ? (
             <ActivityIndicator size="small" color={colors.primary} />
           ) : (
-            <Text style={styles.value}>Muhamet Konushevci</Text>
+            <Text style={styles.value}>{fullName}</Text>
           )}
         </View>
         <View style={styles.profileRow}>
           <Text style={styles.label}>Email:</Text>
-          {loadingEmail ? (
+          {isLoading ? (
             <ActivityIndicator size="small" color={colors.primary} />
           ) : (
-            <Text style={styles.value}>{email || 'N/A'}</Text>
+            <Text style={styles.value}>{userEmail}</Text>
           )}
         </View>
 
