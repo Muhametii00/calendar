@@ -1,10 +1,6 @@
 import { firestore } from '../config/firebase';
-import moment from 'moment';
 import { Event } from '../components/EventsList';
-
-const formatDateKey = (date: Date): string => {
-  return moment(date).format('YYYY-MM-DD');
-};
+import { formatDateKey, sortEventsByTime } from './helpers';
 
 export const getEventsForDate = async (
   userId: string,
@@ -30,11 +26,7 @@ export const getEventsForDate = async (
       });
     });
 
-    return events.sort((a, b) => {
-      const timeA = a.time.toLowerCase();
-      const timeB = b.time.toLowerCase();
-      return timeA.localeCompare(timeB);
-    });
+    return sortEventsByTime(events);
   } catch (error) {
     console.error('Error getting events:', error);
     return [];

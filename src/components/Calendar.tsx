@@ -66,12 +66,10 @@ function Calendar({
     const days = [];
     const emptyDays = Array(firstDayOfMonth).fill(null);
 
-    // Empty cells for days before the first day of the month
     emptyDays.forEach((_, index) => {
       days.push(<View key={`empty-${index}`} style={styles.dayCell} />);
     });
 
-    // Days of the month
     for (let day = 1; day <= daysInMonth; day++) {
       const date = new Date(year, month, day);
       const isSelected = selectedDate.toDateString() === date.toDateString();

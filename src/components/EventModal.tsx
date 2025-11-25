@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, Modal, TextInput, TouchableOpacity } from 'react-native';
 import { styles } from '../styles/HomeScreenStyles';
+import { formatDate } from '../utils/helpers';
 
 interface EventFormData {
   title: string;
@@ -34,14 +35,12 @@ export default function EventModal({
   const [timeError, setTimeError] = useState('');
   const [descriptionError, setDescriptionError] = useState('');
 
-  // Update errors from props
   useEffect(() => {
     setTitleError(validationErrors.title || '');
     setTimeError(validationErrors.time || '');
     setDescriptionError(validationErrors.description || '');
   }, [validationErrors]);
 
-  // Reset errors when modal closes
   useEffect(() => {
     if (!visible) {
       setTitleError('');
@@ -83,19 +82,13 @@ export default function EventModal({
           <Text style={styles.modalTitle}>
             {mode === 'add' ? 'Add New Event' : 'Edit Event'}
           </Text>
-          <Text style={styles.modalDate}>
-            {selectedDate.toLocaleDateString('en-US', {
-              weekday: 'long',
-              year: 'numeric',
-              month: 'long',
-              day: 'numeric',
-            })}
-          </Text>
+          <Text style={styles.modalDate}>{formatDate(selectedDate)}</Text>
 
           <View>
             <TextInput
               style={[styles.input, titleError && styles.inputError]}
               placeholder="Event Title *"
+              placeholderTextColor="#999"
               value={eventData.title}
               onChangeText={handleTitleChange}
             />
@@ -108,6 +101,7 @@ export default function EventModal({
             <TextInput
               style={[styles.input, timeError && styles.inputError]}
               placeholder="Time (e.g., 10:00 AM) *"
+              placeholderTextColor="#999"
               value={eventData.time}
               onChangeText={handleTimeChange}
             />
@@ -124,6 +118,7 @@ export default function EventModal({
                 descriptionError && styles.inputError,
               ]}
               placeholder="Description (optional)"
+              placeholderTextColor="#999"
               value={eventData.description}
               onChangeText={handleDescriptionChange}
               multiline

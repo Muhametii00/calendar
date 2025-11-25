@@ -10,12 +10,14 @@ import {
   ScrollView,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import Icon from 'react-native-vector-icons/Ionicons';
 import { SignUpScreenNavigationProp as SignUpScreenNavigationPropType } from '../navigation/types';
 import { styles } from '../styles/SignUpScreenStyles';
 import { useNavigation } from '@react-navigation/native';
 import { useAuth } from '../context/AuthContext';
 import { signUpSchema, getValidationErrors } from '../utils/validation';
 import * as yup from 'yup';
+import { colors } from '../constants/theme';
 
 export default function SignUpScreen() {
   const navigation = useNavigation<SignUpScreenNavigationPropType>();
@@ -28,6 +30,8 @@ export default function SignUpScreen() {
   const [emailError, setEmailError] = useState('');
   const [passwordError, setPasswordError] = useState('');
   const [confirmPasswordError, setConfirmPasswordError] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const { signUp } = useAuth();
 
   const validateForm = async (): Promise<boolean> => {
@@ -136,24 +140,41 @@ export default function SignUpScreen() {
 
               <View style={styles.inputContainer}>
                 <Text style={styles.label}>Password</Text>
-                <TextInput
-                  style={[styles.input, passwordError && styles.inputError]}
-                  placeholder="Enter your password"
-                  placeholderTextColor="#999"
-                  value={password}
-                  onChangeText={text => {
-                    setPassword(text);
-                    if (passwordError) setPasswordError('');
-                    if (confirmPassword && confirmPasswordError) {
-                      setConfirmPasswordError('');
-                    }
-                  }}
-                  secureTextEntry
-                  autoCapitalize="none"
-                  autoCorrect={false}
-                  textContentType="newPassword"
-                  autoComplete="password-new"
-                />
+                <View
+                  style={[
+                    styles.passwordInputContainer,
+                    passwordError && styles.inputError,
+                  ]}
+                >
+                  <TextInput
+                    style={styles.passwordInput}
+                    placeholder="Enter your password"
+                    placeholderTextColor="#999"
+                    value={password}
+                    onChangeText={text => {
+                      setPassword(text);
+                      if (passwordError) setPasswordError('');
+                      if (confirmPassword && confirmPasswordError) {
+                        setConfirmPasswordError('');
+                      }
+                    }}
+                    secureTextEntry={!showPassword}
+                    autoCapitalize="none"
+                    autoCorrect={false}
+                    textContentType="newPassword"
+                    autoComplete="password-new"
+                  />
+                  <TouchableOpacity
+                    style={styles.passwordToggle}
+                    onPress={() => setShowPassword(!showPassword)}
+                  >
+                    <Icon
+                      name={showPassword ? 'eye-off-outline' : 'eye-outline'}
+                      size={20}
+                      color={colors.primary}
+                    />
+                  </TouchableOpacity>
+                </View>
                 {passwordError ? (
                   <Text style={styles.errorText}>{passwordError}</Text>
                 ) : null}
@@ -161,24 +182,40 @@ export default function SignUpScreen() {
 
               <View style={styles.inputContainer}>
                 <Text style={styles.label}>Confirm Password</Text>
-                <TextInput
+                <View
                   style={[
-                    styles.input,
+                    styles.passwordInputContainer,
                     confirmPasswordError && styles.inputError,
                   ]}
-                  placeholder="Confirm your password"
-                  placeholderTextColor="#999"
-                  value={confirmPassword}
-                  onChangeText={text => {
-                    setConfirmPassword(text);
-                    if (confirmPasswordError) setConfirmPasswordError('');
-                  }}
-                  secureTextEntry
-                  autoCapitalize="none"
-                  autoCorrect={false}
-                  textContentType="newPassword"
-                  autoComplete="password-new"
-                />
+                >
+                  <TextInput
+                    style={styles.passwordInput}
+                    placeholder="Confirm your password"
+                    placeholderTextColor="#999"
+                    value={confirmPassword}
+                    onChangeText={text => {
+                      setConfirmPassword(text);
+                      if (confirmPasswordError) setConfirmPasswordError('');
+                    }}
+                    secureTextEntry={!showConfirmPassword}
+                    autoCapitalize="none"
+                    autoCorrect={false}
+                    textContentType="newPassword"
+                    autoComplete="password-new"
+                  />
+                  <TouchableOpacity
+                    style={styles.passwordToggle}
+                    onPress={() => setShowConfirmPassword(!showConfirmPassword)}
+                  >
+                    <Icon
+                      name={
+                        showConfirmPassword ? 'eye-off-outline' : 'eye-outline'
+                      }
+                      size={20}
+                      color={colors.primary}
+                    />
+                  </TouchableOpacity>
+                </View>
                 {confirmPasswordError ? (
                   <Text style={styles.errorText}>{confirmPasswordError}</Text>
                 ) : null}

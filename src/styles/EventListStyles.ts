@@ -17,9 +17,6 @@ export const styles = StyleSheet.create({
     color: colors.text.secondary,
     marginBottom: spacing.lg,
   },
-  listContent: {
-    paddingBottom: spacing.xl,
-  },
   eventCard: {
     flexDirection: 'row',
     backgroundColor: colors.inputBackground,
@@ -32,6 +29,7 @@ export const styles = StyleSheet.create({
   },
   eventColorBar: {
     width: 4,
+    backgroundColor: colors.primary,
   },
   eventContent: {
     flex: 1,

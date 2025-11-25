@@ -30,7 +30,7 @@ export const styles = StyleSheet.create({
   },
   title: {
     ...typography.title,
-    color: colors.text.primary,
+    color: colors.primary,
     marginBottom: spacing.sm,
   },
   subtitle: {
@@ -57,6 +57,26 @@ export const styles = StyleSheet.create({
     fontSize: typography.body.fontSize,
     backgroundColor: colors.inputBackground,
     color: colors.text.primary,
+  },
+  passwordInputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: borderRadius.md,
+    backgroundColor: colors.inputBackground,
+  },
+  passwordInput: {
+    flex: 1,
+    height: 52,
+    paddingHorizontal: spacing.md,
+    fontSize: typography.body.fontSize,
+    color: colors.text.primary,
+  },
+  passwordToggle: {
+    padding: spacing.md,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   inputError: {
     borderColor: '#FF3B30',

@@ -52,7 +52,6 @@ export async function authenticateWithBiometrics(
       fallbackPromptMessage: 'Use passcode',
     };
 
-    // Add cancel button text for iOS
     if (Platform.OS === 'ios') {
       promptOptions.cancelButtonText = 'Cancel';
     }

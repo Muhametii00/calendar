@@ -3,6 +3,7 @@ import { View, Text, FlatList, TouchableOpacity } from 'react-native';
 import { colors } from '../constants/theme';
 import { styles } from '../styles/EventListStyles';
 import Icon from 'react-native-vector-icons/Ionicons';
+import { formatDate } from '../utils/helpers';
 
 export interface Event {
   id: string;
@@ -19,27 +20,13 @@ interface EventsListProps {
 }
 
 function EventsList({ events, selectedDate, onEditEvent }: EventsListProps) {
-  const formatDate = (date: Date) => {
-    return date.toLocaleDateString('en-US', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    });
-  };
-
   const renderEvent = ({ item }: { item: Event }) => (
     <TouchableOpacity
       style={styles.eventCard}
       onPress={() => onEditEvent?.(item)}
       activeOpacity={0.7}
     >
-      <View
-        style={[
-          styles.eventColorBar,
-          { backgroundColor: item.color || colors.primary },
-        ]}
-      />
+      <View style={styles.eventColorBar} />
       <View style={styles.eventContent}>
         <Text style={styles.eventTime}>{item.time}</Text>
         <Text style={styles.eventTitle}>{item.title}</Text>
@@ -75,16 +62,11 @@ function EventsList({ events, selectedDate, onEditEvent }: EventsListProps) {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.dateText}>{formatDate(selectedDate)}</Text>
-      <Text style={styles.eventsCount}>
-        {events.length} {events.length === 1 ? 'meeting' : 'meetings'}
-      </Text>
       <FlatList
         data={events}
         renderItem={renderEvent}
         keyExtractor={item => item.id}
-        contentContainerStyle={styles.listContent}
-        scrollEnabled={false} // outer FlatList handles scrolling
+        scrollEnabled={false}
         nestedScrollEnabled={true}
         showsVerticalScrollIndicator={false}
       />
