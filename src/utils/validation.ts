@@ -47,8 +47,8 @@ export const eventSchema = yup.object().shape({
     .string()
     .required('Time is required')
     .matches(
-      /^(0?[1-9]|1[0-2]):[0-5][0-9]\s?(AM|PM|am|pm)$|^([01]?[0-9]|2[0-3]):[0-5][0-9]$/,
-      'Please enter a valid time format (e.g., "10:00 AM" or "14:30")',
+      /^([01][0-9]|2[0-3]):[0-5][0-9]$/,
+      'Please enter a valid time in 24-hour format (e.g., "21:00" or "13:00")',
     )
     .trim(),
   description: yup

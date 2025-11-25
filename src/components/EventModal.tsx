@@ -57,7 +57,31 @@ export default function EventModal({
   };
 
   const handleTimeChange = (text: string) => {
-    onEventDataChange({ ...eventData, time: text });
+    const isTyping = text.length > eventData.time.length;
+
+    let formatted = text.replace(/[^\d:]/g, '').slice(0, 5);
+
+    if (isTyping && formatted.length === 2 && !formatted.includes(':')) {
+      formatted = formatted + ':';
+    }
+
+    const parts = formatted.split(':');
+    if (parts.length === 2) {
+      const hours = parts[0].slice(0, 2);
+      const minutes = parts[1].slice(0, 2);
+
+      const hourNum = hours.length === 2 ? parseInt(hours, 10) : null;
+      const validHours = hourNum !== null && hourNum > 23 ? '23' : hours;
+
+      const minNum = minutes.length === 2 ? parseInt(minutes, 10) : null;
+      const validMinutes = minNum !== null && minNum > 59 ? '59' : minutes;
+
+      formatted = validHours + ':' + validMinutes;
+    } else if (parts.length === 1 && parts[0].length === 2 && isTyping) {
+      formatted = parts[0] + ':';
+    }
+
+    onEventDataChange({ ...eventData, time: formatted });
     if (timeError) {
       setTimeError('');
     }
@@ -100,10 +124,12 @@ export default function EventModal({
           <View>
             <TextInput
               style={[styles.input, timeError && styles.inputError]}
-              placeholder="Time (e.g., 10:00 AM) *"
+              placeholder="Time (e.g., 21:00) *"
               placeholderTextColor="#999"
               value={eventData.time}
               onChangeText={handleTimeChange}
+              keyboardType="numeric"
+              maxLength={5}
             />
             {timeError ? (
               <Text style={styles.errorText}>{timeError}</Text>

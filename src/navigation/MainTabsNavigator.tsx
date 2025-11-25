@@ -3,7 +3,6 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import type { BottomTabNavigationOptions } from '@react-navigation/bottom-tabs';
 import Icon from 'react-native-vector-icons/Ionicons';
 import HomeScreen from '../screens/HomeScreen';
-import EventScreen from '../screens/EventScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 import { MainTabParamList } from './types';
 import { colors } from '../constants/theme';
@@ -40,16 +39,6 @@ export default function MainTabsNavigator() {
           tabBarLabel: 'Home',
           tabBarIcon: ({ color, size }) => (
             <Icon name="home" size={size || 24} color={color} />
-          ),
-        }}
-      />
-      <Tab.Screen
-        name="Events"
-        component={EventScreen}
-        options={{
-          tabBarLabel: 'Events',
-          tabBarIcon: ({ color, size }) => (
-            <Icon name="calendar" size={size || 24} color={color} />
           ),
         }}
       />

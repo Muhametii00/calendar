@@ -24,8 +24,6 @@ interface AuthContextType {
   isLoading: boolean;
   authenticateWithBiometrics: () => Promise<boolean>;
   showBiometricBlur: boolean;
-  selectedDate: Date;
-  setSelectedDate: (date: Date) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -38,7 +36,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const biometricPromptShown = useRef(false);
   const biometricPromptInProgress = useRef(false);
   const [user, setUser] = useState<any | null>(null);
-  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
 
   useEffect(() => {
     const unsubscribe = auth().onAuthStateChanged(async firebaseUser => {
@@ -337,8 +334,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         isLoading,
         authenticateWithBiometrics: handleBiometricAuth,
         showBiometricBlur,
-        selectedDate,
-        setSelectedDate,
       }}
     >
       {children}

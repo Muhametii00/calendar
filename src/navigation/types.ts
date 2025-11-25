@@ -10,7 +10,6 @@ export type RootStackParamList = {
 
 export type MainTabParamList = {
   Home: undefined;
-  Events: undefined;
   Profile: undefined;
 };
 
@@ -29,11 +28,6 @@ export type HomeScreenNavigationProp = BottomTabNavigationProp<
   'Home'
 >;
 
-export type EventScreenNavigationProp = BottomTabNavigationProp<
-  MainTabParamList,
-  'Events'
->;
-
 export type ProfileScreenNavigationProp = BottomTabNavigationProp<
   MainTabParamList,
   'Profile'
@@ -42,5 +36,4 @@ export type ProfileScreenNavigationProp = BottomTabNavigationProp<
 export type LoginScreenRouteProp = RouteProp<RootStackParamList, 'Login'>;
 export type SignUpScreenRouteProp = RouteProp<RootStackParamList, 'SignUp'>;
 export type HomeScreenRouteProp = RouteProp<MainTabParamList, 'Home'>;
-export type EventScreenRouteProp = RouteProp<MainTabParamList, 'Events'>;
 export type ProfileScreenRouteProp = RouteProp<MainTabParamList, 'Profile'>;
