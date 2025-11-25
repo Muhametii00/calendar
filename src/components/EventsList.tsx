@@ -1,7 +1,8 @@
 import React from 'react';
-import { View, Text, FlatList } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity } from 'react-native';
 import { colors } from '../constants/theme';
 import { styles } from '../styles/EventListStyles';
+import Icon from 'react-native-vector-icons/Ionicons';
 
 export interface Event {
   id: string;
@@ -14,9 +15,10 @@ export interface Event {
 interface EventsListProps {
   events: Event[];
   selectedDate: Date;
+  onEditEvent?: (event: Event) => void;
 }
 
-function EventsList({ events, selectedDate }: EventsListProps) {
+function EventsList({ events, selectedDate, onEditEvent }: EventsListProps) {
   const formatDate = (date: Date) => {
     return date.toLocaleDateString('en-US', {
       weekday: 'long',
@@ -27,7 +29,11 @@ function EventsList({ events, selectedDate }: EventsListProps) {
   };
 
   const renderEvent = ({ item }: { item: Event }) => (
-    <View style={styles.eventCard}>
+    <TouchableOpacity
+      style={styles.eventCard}
+      onPress={() => onEditEvent?.(item)}
+      activeOpacity={0.7}
+    >
       <View
         style={[
           styles.eventColorBar,
@@ -41,7 +47,17 @@ function EventsList({ events, selectedDate }: EventsListProps) {
           <Text style={styles.eventDescription}>{item.description}</Text>
         )}
       </View>
-    </View>
+      {onEditEvent && (
+        <TouchableOpacity
+          style={{
+            padding: 10,
+          }}
+          onPress={() => onEditEvent(item)}
+        >
+          <Icon name="pencil" size={20} color={colors.primary} />
+        </TouchableOpacity>
+      )}
+    </TouchableOpacity>
   );
 
   if (events.length === 0) {

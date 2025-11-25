@@ -1,107 +1,99 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { firestore } from '../config/firebase';
 import moment from 'moment';
 import { Event } from '../components/EventsList';
-
-const EVENTS_STORAGE_KEY = '@calendar_events';
 
 const formatDateKey = (date: Date): string => {
   return moment(date).format('YYYY-MM-DD');
 };
 
-export const getEventsForDate = async (date: Date): Promise<Event[]> => {
+export const getEventsForDate = async (
+  userId: string,
+  date: Date,
+): Promise<Event[]> => {
   try {
     const dateKey = formatDateKey(date);
-    const allEventsJson = await AsyncStorage.getItem(EVENTS_STORAGE_KEY);
-    if (!allEventsJson) return [];
+    const eventsSnapshot = await firestore()
+      .collection('events')
+      .where('userId', '==', userId)
+      .where('date', '==', dateKey)
+      .get();
 
-    const allEvents: Record<string, Event[]> = JSON.parse(allEventsJson);
-    return allEvents[dateKey] || [];
+    const events: Event[] = [];
+    eventsSnapshot.forEach(doc => {
+      const data = doc.data();
+      events.push({
+        id: doc.id,
+        title: data.title,
+        time: data.time,
+        description: data.description,
+        color: data.color,
+      });
+    });
+
+    return events.sort((a, b) => {
+      const timeA = a.time.toLowerCase();
+      const timeB = b.time.toLowerCase();
+      return timeA.localeCompare(timeB);
+    });
   } catch (error) {
     console.error('Error getting events:', error);
     return [];
   }
 };
 
-export const saveEvent = async (date: Date, event: Event): Promise<void> => {
+export const saveEvent = async (
+  userId: string,
+  date: Date,
+  event: Event,
+): Promise<void> => {
+  if (!userId || userId.trim() === '') {
+    throw new Error('User ID is required to save an event');
+  }
   try {
     const dateKey = formatDateKey(date);
-    const allEventsJson = await AsyncStorage.getItem(EVENTS_STORAGE_KEY);
-    const allEvents: Record<string, Event[]> = allEventsJson
-      ? JSON.parse(allEventsJson)
-      : {};
-
-    if (!allEvents[dateKey]) {
-      allEvents[dateKey] = [];
-    }
-
-    allEvents[dateKey].push(event);
-    await AsyncStorage.setItem(EVENTS_STORAGE_KEY, JSON.stringify(allEvents));
+    await firestore()
+      .collection('events')
+      .add({
+        userId: userId.trim(),
+        date: dateKey,
+        title: event.title,
+        time: event.time,
+        description: event.description || '',
+        color: event.color || '#007AFF',
+      });
   } catch (error) {
     console.error('Error saving event:', error);
     throw error;
   }
 };
 
-export const deleteEvent = async (
+export const updateEvent = async (
+  userId: string,
   date: Date,
   eventId: string,
+  event: Event,
 ): Promise<void> => {
+  if (!userId || userId.trim() === '') {
+    throw new Error('User ID is required to update an event');
+  }
+  if (!eventId || eventId.trim() === '') {
+    throw new Error('Event ID is required to update an event');
+  }
   try {
     const dateKey = formatDateKey(date);
-    const allEventsJson = await AsyncStorage.getItem(EVENTS_STORAGE_KEY);
-    if (!allEventsJson) return;
-
-    const allEvents: Record<string, Event[]> = JSON.parse(allEventsJson);
-    if (allEvents[dateKey]) {
-      allEvents[dateKey] = allEvents[dateKey].filter(e => e.id !== eventId);
-      await AsyncStorage.setItem(EVENTS_STORAGE_KEY, JSON.stringify(allEvents));
-    }
+    await firestore()
+      .collection('events')
+      .doc(eventId)
+      .update({
+        userId: userId.trim(),
+        date: dateKey,
+        title: event.title,
+        time: event.time,
+        description: event.description || '',
+        color: event.color || '#007AFF',
+      });
   } catch (error) {
-    console.error('Error deleting event:', error);
+    console.error('Error updating event:', error);
     throw error;
-  }
-};
-
-// Initialize with some sample events for demonstration
-export const initializeSampleEvents = async (): Promise<void> => {
-  try {
-    const today = new Date();
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
-
-    const sampleEvents: Record<string, Event[]> = {
-      [formatDateKey(today)]: [
-        {
-          id: '1',
-          title: 'Team Meeting',
-          time: '10:00 AM',
-          description: 'Weekly team sync',
-          color: '#007AFF',
-        },
-        {
-          id: '2',
-          title: 'Lunch with Client',
-          time: '12:30 PM',
-          description: 'Discuss project requirements',
-          color: '#34C759',
-        },
-      ],
-      [formatDateKey(tomorrow)]: [
-        {
-          id: '3',
-          title: 'Project Review',
-          time: '2:00 PM',
-          description: 'Review Q4 progress',
-          color: '#FF9500',
-        },
-      ],
-    };
-
-    await AsyncStorage.setItem(
-      EVENTS_STORAGE_KEY,
-      JSON.stringify(sampleEvents),
-    );
-  } catch (error) {
-    console.error('Error initializing sample events:', error);
   }
 };

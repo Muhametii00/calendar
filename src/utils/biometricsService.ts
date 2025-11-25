@@ -1,4 +1,5 @@
 import ReactNativeBiometrics from 'react-native-biometrics';
+import { Platform } from 'react-native';
 
 const rnBiometrics = new ReactNativeBiometrics({
   allowDeviceCredentials: true,
@@ -9,7 +10,6 @@ export interface BiometricResult {
   error?: string;
 }
 
-// Check if biometrics is available on the device
 export async function isBiometricAvailable(): Promise<boolean> {
   try {
     const { available } = await rnBiometrics.isSensorAvailable();
@@ -19,8 +19,6 @@ export async function isBiometricAvailable(): Promise<boolean> {
     return false;
   }
 }
-
-// Get the type of biometric available (Face ID, Touch ID, Fingerprint, etc.)
 
 export async function getBiometricType(): Promise<string | null> {
   try {
@@ -45,30 +43,85 @@ export async function authenticateWithBiometrics(
       };
     }
 
-    const { success, error } = await rnBiometrics.simplePrompt({
+    if (Platform.OS === 'ios') {
+      await new Promise<void>(resolve => setTimeout(resolve, 50));
+    }
+
+    const promptOptions: any = {
       promptMessage,
       fallbackPromptMessage: 'Use passcode',
-    });
+    };
 
-    if (success) {
+    // Add cancel button text for iOS
+    if (Platform.OS === 'ios') {
+      promptOptions.cancelButtonText = 'Cancel';
+    }
+
+    const result = await rnBiometrics.simplePrompt(promptOptions);
+
+    if (result.success) {
       return { success: true };
-    } else {
+    }
+
+    if (
+      !result.error ||
+      result.error === 'User cancellation' ||
+      result.error === 'UserCancel'
+    ) {
       return {
         success: false,
-        error: error || 'Biometric authentication failed',
+        error: 'User cancelled authentication',
       };
     }
-  } catch (error: any) {
-    console.error('Biometric authentication error:', error);
+
+    const errorMessage = result.error || 'Biometric authentication failed';
+
+    if (
+      errorMessage.includes('cancel') ||
+      errorMessage.includes('Cancel') ||
+      errorMessage.includes('UserCancel')
+    ) {
+      return {
+        success: false,
+        error: 'User cancelled authentication',
+      };
+    }
+
     return {
       success: false,
-      error:
-        error?.message || 'An error occurred during biometric authentication',
+      error: errorMessage,
+    };
+  } catch (error: any) {
+    console.error('Biometric authentication error:', error);
+
+    const errorMessage =
+      error?.message ||
+      error?.toString() ||
+      'An error occurred during biometric authentication';
+
+    const errorCode = error?.code;
+    const isUserCancellation =
+      errorMessage.includes('cancel') ||
+      errorMessage.includes('Cancel') ||
+      errorMessage.includes('UserCancel') ||
+      errorCode === 'UserCancel' ||
+      errorCode === -128 ||
+      String(errorCode) === '-128';
+
+    if (isUserCancellation) {
+      return {
+        success: false,
+        error: 'User cancelled authentication',
+      };
+    }
+
+    return {
+      success: false,
+      error: errorMessage,
     };
   }
 }
 
-// Get a user-friendly name for the biometric type
 export function getBiometricName(biometryType: string | null): string {
   switch (biometryType) {
     case 'FaceID':

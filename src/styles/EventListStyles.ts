@@ -28,6 +28,7 @@ export const styles = StyleSheet.create({
     overflow: 'hidden',
     borderWidth: 1,
     borderColor: colors.border,
+    position: 'relative',
   },
   eventColorBar: {
     width: 4,
@@ -61,5 +62,22 @@ export const styles = StyleSheet.create({
     ...typography.subtitle,
     color: colors.text.secondary,
     textAlign: 'center',
+  },
+  deleteButton: {
+    position: 'absolute',
+    right: 10,
+    top: 10,
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    backgroundColor: '#FF3B30',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  deleteButtonText: {
+    color: '#FFFFFF',
+    fontSize: 24,
+    fontWeight: 'bold',
+    lineHeight: 24,
   },
 });

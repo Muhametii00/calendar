@@ -14,6 +14,8 @@ import { SignUpScreenNavigationProp as SignUpScreenNavigationPropType } from '..
 import { styles } from '../styles/SignUpScreenStyles';
 import { useNavigation } from '@react-navigation/native';
 import { useAuth } from '../context/AuthContext';
+import { signUpSchema, getValidationErrors } from '../utils/validation';
+import * as yup from 'yup';
 
 export default function SignUpScreen() {
   const navigation = useNavigation<SignUpScreenNavigationPropType>();
@@ -22,34 +24,45 @@ export default function SignUpScreen() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [nameError, setNameError] = useState('');
+  const [emailError, setEmailError] = useState('');
+  const [passwordError, setPasswordError] = useState('');
+  const [confirmPasswordError, setConfirmPasswordError] = useState('');
   const { signUp } = useAuth();
 
+  const validateForm = async (): Promise<boolean> => {
+    try {
+      await signUpSchema.validate(
+        { name, email, password, confirmPassword },
+        { abortEarly: false },
+      );
+      setNameError('');
+      setEmailError('');
+      setPasswordError('');
+      setConfirmPasswordError('');
+      return true;
+    } catch (error) {
+      if (error instanceof yup.ValidationError) {
+        const errors = getValidationErrors(error);
+        setNameError(errors.name || '');
+        setEmailError(errors.email || '');
+        setPasswordError(errors.password || '');
+        setConfirmPasswordError(errors.confirmPassword || '');
+      }
+      return false;
+    }
+  };
+
   const handleSignUp = async () => {
-    if (
-      !name.trim() ||
-      !email.trim() ||
-      !password.trim() ||
-      !confirmPassword.trim()
-    ) {
-      Alert.alert('Error', 'Please fill in all fields');
-      return;
-    }
-
-    if (password !== confirmPassword) {
-      Alert.alert('Error', 'Passwords do not match');
-      return;
-    }
-
-    if (password.length < 6) {
-      Alert.alert('Error', 'Password must be at least 6 characters');
+    const isValid = await validateForm();
+    if (!isValid) {
       return;
     }
 
     setIsLoading(true);
     try {
-      await signUp(email, password, name);
+      await signUp(email.trim(), password, name.trim());
       Alert.alert('Success', 'Account created successfully!');
-      // Navigation will happen automatically via auth state change
     } catch (error: any) {
       Alert.alert(
         'Error',
@@ -72,67 +85,103 @@ export default function SignUpScreen() {
           showsVerticalScrollIndicator={false}
         >
           <View style={styles.content}>
-            {/* Header */}
             <View style={styles.header}>
-              <Text style={styles.title}>Create Account</Text>
+              <Text style={styles.title}>Create an Account</Text>
               <Text style={styles.subtitle}>Sign up to get started</Text>
             </View>
 
-            {/* Form */}
             <View style={styles.form}>
               <View style={styles.inputContainer}>
                 <Text style={styles.label}>Full Name</Text>
                 <TextInput
-                  style={styles.input}
+                  style={[styles.input, nameError && styles.inputError]}
                   placeholder="Enter your full name"
                   placeholderTextColor="#999"
                   value={name}
-                  onChangeText={setName}
+                  onChangeText={text => {
+                    setName(text);
+                    if (nameError) setNameError('');
+                  }}
                   autoCapitalize="words"
                   autoCorrect={false}
+                  textContentType="name"
+                  autoComplete="name"
                 />
+                {nameError ? (
+                  <Text style={styles.errorText}>{nameError}</Text>
+                ) : null}
               </View>
 
               <View style={styles.inputContainer}>
                 <Text style={styles.label}>Email</Text>
                 <TextInput
-                  style={styles.input}
+                  style={[styles.input, emailError && styles.inputError]}
                   placeholder="Enter your email"
                   placeholderTextColor="#999"
                   value={email}
-                  onChangeText={setEmail}
+                  onChangeText={text => {
+                    setEmail(text);
+                    if (emailError) setEmailError('');
+                  }}
                   keyboardType="email-address"
                   autoCapitalize="none"
                   autoCorrect={false}
+                  textContentType="emailAddress"
+                  autoComplete="email"
                 />
+                {emailError ? (
+                  <Text style={styles.errorText}>{emailError}</Text>
+                ) : null}
               </View>
 
               <View style={styles.inputContainer}>
                 <Text style={styles.label}>Password</Text>
                 <TextInput
-                  style={styles.input}
+                  style={[styles.input, passwordError && styles.inputError]}
                   placeholder="Enter your password"
                   placeholderTextColor="#999"
                   value={password}
-                  onChangeText={setPassword}
+                  onChangeText={text => {
+                    setPassword(text);
+                    if (passwordError) setPasswordError('');
+                    if (confirmPassword && confirmPasswordError) {
+                      setConfirmPasswordError('');
+                    }
+                  }}
                   secureTextEntry
                   autoCapitalize="none"
                   autoCorrect={false}
+                  textContentType="newPassword"
+                  autoComplete="password-new"
                 />
+                {passwordError ? (
+                  <Text style={styles.errorText}>{passwordError}</Text>
+                ) : null}
               </View>
 
               <View style={styles.inputContainer}>
                 <Text style={styles.label}>Confirm Password</Text>
                 <TextInput
-                  style={styles.input}
+                  style={[
+                    styles.input,
+                    confirmPasswordError && styles.inputError,
+                  ]}
                   placeholder="Confirm your password"
                   placeholderTextColor="#999"
                   value={confirmPassword}
-                  onChangeText={setConfirmPassword}
+                  onChangeText={text => {
+                    setConfirmPassword(text);
+                    if (confirmPasswordError) setConfirmPasswordError('');
+                  }}
                   secureTextEntry
                   autoCapitalize="none"
                   autoCorrect={false}
+                  textContentType="newPassword"
+                  autoComplete="password-new"
                 />
+                {confirmPasswordError ? (
+                  <Text style={styles.errorText}>{confirmPasswordError}</Text>
+                ) : null}
               </View>
 
               <TouchableOpacity

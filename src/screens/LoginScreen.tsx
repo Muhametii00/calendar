@@ -5,6 +5,8 @@ import { useAuth } from '../context/AuthContext';
 import { styles } from '../styles/LoginScreenStyles';
 import { useNavigation } from '@react-navigation/native';
 import { LoginScreenNavigationProp } from '../navigation/types';
+import { loginSchema, getValidationErrors } from '../utils/validation';
+import * as yup from 'yup';
 
 export default function LoginScreen() {
   const navigation = useNavigation<LoginScreenNavigationProp>();
@@ -12,16 +14,34 @@ export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [emailError, setEmailError] = useState('');
+  const [passwordError, setPasswordError] = useState('');
+
+  const validateForm = async (): Promise<boolean> => {
+    try {
+      await loginSchema.validate({ email, password }, { abortEarly: false });
+      setEmailError('');
+      setPasswordError('');
+      return true;
+    } catch (error) {
+      if (error instanceof yup.ValidationError) {
+        const errors = getValidationErrors(error);
+        setEmailError(errors.email || '');
+        setPasswordError(errors.password || '');
+      }
+      return false;
+    }
+  };
 
   const handleLogin = async () => {
-    if (!email.trim() || !password.trim()) {
-      Alert.alert('Error', 'Please enter both email and password');
+    const isValid = await validateForm();
+    if (!isValid) {
       return;
     }
 
     setIsLoading(true);
     try {
-      await login(email, password);
+      await login(email.trim(), password);
     } catch (error: any) {
       const errorMessage = error?.message || 'Login failed. Please try again.';
       Alert.alert('Error', errorMessage);
@@ -42,29 +62,45 @@ export default function LoginScreen() {
           <View style={styles.inputContainer}>
             <Text style={styles.label}>Email</Text>
             <TextInput
-              style={styles.input}
+              style={[styles.input, emailError && styles.inputError]}
               placeholder="Enter your email"
               placeholderTextColor="#999"
               value={email}
-              onChangeText={setEmail}
+              onChangeText={text => {
+                setEmail(text);
+                if (emailError) setEmailError('');
+              }}
               keyboardType="email-address"
               autoCapitalize="none"
               autoCorrect={false}
+              textContentType="emailAddress"
+              autoComplete="email"
             />
+            {emailError ? (
+              <Text style={styles.errorText}>{emailError}</Text>
+            ) : null}
           </View>
 
           <View style={styles.inputContainer}>
             <Text style={styles.label}>Password</Text>
             <TextInput
-              style={styles.input}
+              style={[styles.input, passwordError && styles.inputError]}
               placeholder="Enter your password"
               placeholderTextColor="#999"
               value={password}
-              onChangeText={setPassword}
+              onChangeText={text => {
+                setPassword(text);
+                if (passwordError) setPasswordError('');
+              }}
               secureTextEntry
               autoCapitalize="none"
               autoCorrect={false}
+              textContentType="password"
+              autoComplete="password"
             />
+            {passwordError ? (
+              <Text style={styles.errorText}>{passwordError}</Text>
+            ) : null}
           </View>
 
           <TouchableOpacity

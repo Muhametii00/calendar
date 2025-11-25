@@ -13,6 +13,7 @@ import {
 } from '../utils/biometricsService';
 import BiometricBlurOverlay from '../components/BiometricBlurOverlay';
 import auth from '@react-native-firebase/auth';
+import { firestore } from '../config/firebase';
 
 interface AuthContextType {
   isAuthenticated: boolean;
@@ -33,6 +34,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [showBiometricBlur, setShowBiometricBlur] = useState(false);
   const appState = useRef(AppState.currentState);
   const biometricPromptShown = useRef(false);
+  const biometricPromptInProgress = useRef(false);
   const [user, setUser] = useState<any | null>(null);
 
   useEffect(() => {
@@ -44,13 +46,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           'biometricEnabled',
         );
         if (shouldPerformBiometrics === 'true') {
-          await performBiometricAuth();
+          setIsLoading(false);
+          requestAnimationFrame(async () => {
+            await new Promise<void>(resolve => setTimeout(resolve, 100));
+            await performBiometricAuth();
+          });
+        } else {
+          setIsLoading(false);
         }
       } else {
         setUser(null);
         setIsAuthenticated(false);
+        setIsLoading(false);
       }
-      setIsLoading(false);
     });
 
     return unsubscribe;
@@ -87,7 +95,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const performBiometricAuth = async () => {
+    if (biometricPromptInProgress.current) {
+      return;
+    }
+
     try {
+      biometricPromptInProgress.current = true;
       setShowBiometricBlur(true);
 
       await new Promise<void>(resolve => setTimeout(resolve, 100));
@@ -96,6 +109,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (!available) {
         setShowBiometricBlur(false);
         biometricPromptShown.current = true;
+        biometricPromptInProgress.current = false;
         return;
       }
 
@@ -106,19 +120,56 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setShowBiometricBlur(false);
 
       if (!result.success) {
-        await logout();
+        if (result.error && result.error.includes('another authentication')) {
+          biometricPromptShown.current = false;
+          biometricPromptInProgress.current = false;
+          setTimeout(() => {
+            performBiometricAuth();
+          }, 500);
+          return;
+        }
+
+        if (result.error && result.error.includes('cancelled')) {
+          biometricPromptShown.current = false;
+        } else {
+          await logout();
+        }
       } else {
         biometricPromptShown.current = true;
       }
     } catch (error) {
       console.error('Error performing biometric auth:', error);
       setShowBiometricBlur(false);
-      await logout();
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+
+      if (
+        errorMessage.includes('another authentication') ||
+        (error as any)?.code === -4
+      ) {
+        biometricPromptShown.current = false;
+        biometricPromptInProgress.current = false;
+        setTimeout(() => {
+          performBiometricAuth();
+        }, 500);
+        return;
+      }
+
+      if (!errorMessage.includes('cancel')) {
+        await logout();
+      }
+    } finally {
+      biometricPromptInProgress.current = false;
     }
   };
 
   const handleBiometricAuth = async (): Promise<boolean> => {
+    if (biometricPromptInProgress.current) {
+      return false;
+    }
+
     try {
+      biometricPromptInProgress.current = true;
       setShowBiometricBlur(true);
 
       await new Promise<void>(resolve => setTimeout(resolve, 100));
@@ -134,6 +185,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       console.error('Error in biometric authentication:', error);
       setShowBiometricBlur(false);
       return false;
+    } finally {
+      biometricPromptInProgress.current = false;
     }
   };
 
@@ -143,7 +196,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       await AsyncStorage.setItem('userEmail', email);
 
       const available = await isBiometricAvailable();
-      if (available) {
+      if (available && !biometricPromptInProgress.current) {
+        biometricPromptInProgress.current = true;
         setShowBiometricBlur(true);
         await new Promise<void>(resolve => setTimeout(resolve, 100));
 
@@ -152,10 +206,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         );
 
         setShowBiometricBlur(false);
+        biometricPromptInProgress.current = false;
 
         if (!result.success) {
           await logout();
-          throw new Error('Biometric verification failed');
+          const isCancelled =
+            result.error?.includes('cancelled') ||
+            result.error?.includes('Cancel');
+          throw new Error(
+            isCancelled
+              ? 'Biometric verification cancelled'
+              : 'Biometric verification failed',
+          );
         } else {
           await AsyncStorage.setItem('biometricEnabled', 'true');
         }
@@ -164,6 +226,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       biometricPromptShown.current = true;
     } catch (error: any) {
       setShowBiometricBlur(false);
+      biometricPromptInProgress.current = false;
       console.error('Login error:', error);
 
       let errorMessage = 'Login failed. Please try again.';
@@ -201,10 +264,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         displayName: name,
       });
 
+      await firestore().collection('users').doc(userCredential.user.uid).set({
+        fullName: name,
+        email: email,
+        createdAt: firestore.FieldValue.serverTimestamp(),
+      });
+
       await AsyncStorage.setItem('userEmail', email);
 
       const available = await isBiometricAvailable();
-      if (available) {
+      if (available && !biometricPromptInProgress.current) {
+        biometricPromptInProgress.current = true;
         setShowBiometricBlur(true);
         await new Promise<void>(resolve => setTimeout(resolve, 100));
 
@@ -213,6 +283,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         );
 
         setShowBiometricBlur(false);
+        biometricPromptInProgress.current = false;
 
         if (result.success) {
           await AsyncStorage.setItem('biometricEnabled', 'true');
@@ -222,6 +293,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       biometricPromptShown.current = true;
     } catch (error: any) {
       setShowBiometricBlur(false);
+      biometricPromptInProgress.current = false;
       console.error('Sign up error:', error);
 
       let errorMessage = 'Sign up failed. Please try again.';

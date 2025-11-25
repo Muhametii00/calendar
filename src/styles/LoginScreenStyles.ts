@@ -54,6 +54,14 @@ export const styles = StyleSheet.create({
     backgroundColor: colors.inputBackground,
     color: colors.text.primary,
   },
+  inputError: {
+    borderColor: '#FF3B30',
+  },
+  errorText: {
+    ...typography.small,
+    color: '#FF3B30',
+    marginTop: spacing.xs,
+  },
   forgotPassword: {
     alignSelf: 'flex-end',
     marginBottom: spacing.lg,
