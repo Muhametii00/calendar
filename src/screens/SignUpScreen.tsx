@@ -108,7 +108,7 @@ export default function SignUpScreen() {
                   }}
                   autoCapitalize="words"
                   autoCorrect={false}
-                  textContentType="name"
+                  textContentType="oneTimeCode"
                   autoComplete="name"
                 />
                 {nameError ? (
@@ -130,7 +130,7 @@ export default function SignUpScreen() {
                   keyboardType="email-address"
                   autoCapitalize="none"
                   autoCorrect={false}
-                  textContentType="emailAddress"
+                  textContentType="oneTimeCode"
                   autoComplete="email"
                 />
                 {emailError ? (
@@ -161,8 +161,8 @@ export default function SignUpScreen() {
                     secureTextEntry={!showPassword}
                     autoCapitalize="none"
                     autoCorrect={false}
-                    textContentType="newPassword"
-                    autoComplete="password-new"
+                    textContentType="oneTimeCode"
+                    autoComplete="off"
                   />
                   <TouchableOpacity
                     style={styles.passwordToggle}
@@ -200,8 +200,8 @@ export default function SignUpScreen() {
                     secureTextEntry={!showConfirmPassword}
                     autoCapitalize="none"
                     autoCorrect={false}
-                    textContentType="newPassword"
-                    autoComplete="password-new"
+                    textContentType="oneTimeCode"
+                    autoComplete="off"
                   />
                   <TouchableOpacity
                     style={styles.passwordToggle}

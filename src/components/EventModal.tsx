@@ -100,6 +100,7 @@ export default function EventModal({
       animationType="slide"
       transparent={true}
       onRequestClose={onClose}
+      statusBarTranslucent={true}
     >
       <View style={styles.modalOverlay}>
         <View style={styles.modalContent}>

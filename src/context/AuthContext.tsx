@@ -129,8 +129,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           return;
         }
 
-        if (result.error && result.error.includes('cancelled')) {
+        if (
+          result.error &&
+          (result.error.includes('cancelled') ||
+            result.error.includes('Cancel') ||
+            result.error.includes('UserCancel'))
+        ) {
           biometricPromptShown.current = false;
+          await logout();
         } else {
           await logout();
         }
@@ -155,9 +161,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return;
       }
 
-      if (!errorMessage.includes('cancel')) {
-        await logout();
-      }
+      await logout();
     } finally {
       biometricPromptInProgress.current = false;
     }

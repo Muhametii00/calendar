@@ -1,5 +1,14 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Alert } from 'react-native';
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useAuth } from '../context/AuthContext';
@@ -55,95 +64,106 @@ export default function LoginScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
-      <View style={styles.content}>
-        <View style={styles.header}>
-          <Text style={styles.title}>Welcome</Text>
-          <Text style={styles.subtitle}>Sign in to continue</Text>
-        </View>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={{ flex: 1 }}
+      >
+        <ScrollView
+          contentContainerStyle={{ flexGrow: 1 }}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
+          <View style={styles.content}>
+            <View style={styles.header}>
+              <Text style={styles.title}>Welcome</Text>
+              <Text style={styles.subtitle}>Sign in to continue</Text>
+            </View>
 
-        <View style={styles.form}>
-          <View style={styles.inputContainer}>
-            <Text style={styles.label}>Email</Text>
-            <TextInput
-              style={[styles.input, emailError && styles.inputError]}
-              placeholder="Enter your email"
-              placeholderTextColor="#999"
-              value={email}
-              onChangeText={text => {
-                setEmail(text);
-                if (emailError) setEmailError('');
-              }}
-              keyboardType="email-address"
-              autoCapitalize="none"
-              autoCorrect={false}
-              textContentType="emailAddress"
-              autoComplete="email"
-            />
-            {emailError ? (
-              <Text style={styles.errorText}>{emailError}</Text>
-            ) : null}
-          </View>
-
-          <View style={styles.inputContainer}>
-            <Text style={styles.label}>Password</Text>
-            <View
-              style={[
-                styles.passwordInputContainer,
-                passwordError && styles.inputError,
-              ]}
-            >
-              <TextInput
-                style={styles.passwordInput}
-                placeholder="Enter your password"
-                placeholderTextColor="#999"
-                value={password}
-                onChangeText={text => {
-                  setPassword(text);
-                  if (passwordError) setPasswordError('');
-                }}
-                secureTextEntry={!showPassword}
-                autoCapitalize="none"
-                autoCorrect={false}
-                textContentType="password"
-                autoComplete="password"
-              />
-              <TouchableOpacity
-                style={styles.passwordToggle}
-                onPress={() => setShowPassword(!showPassword)}
-              >
-                <Icon
-                  name={showPassword ? 'eye-off-outline' : 'eye-outline'}
-                  size={20}
-                  color={colors.primary}
+            <View style={styles.form}>
+              <View style={styles.inputContainer}>
+                <Text style={styles.label}>Email</Text>
+                <TextInput
+                  style={[styles.input, emailError && styles.inputError]}
+                  placeholder="Enter your email"
+                  placeholderTextColor="#999"
+                  value={email}
+                  onChangeText={text => {
+                    setEmail(text);
+                    if (emailError) setEmailError('');
+                  }}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  textContentType="oneTimeCode"
+                  autoComplete="email"
                 />
+                {emailError ? (
+                  <Text style={styles.errorText}>{emailError}</Text>
+                ) : null}
+              </View>
+
+              <View style={styles.inputContainer}>
+                <Text style={styles.label}>Password</Text>
+                <View
+                  style={[
+                    styles.passwordInputContainer,
+                    passwordError && styles.inputError,
+                  ]}
+                >
+                  <TextInput
+                    style={styles.passwordInput}
+                    placeholder="Enter your password"
+                    placeholderTextColor="#999"
+                    value={password}
+                    onChangeText={text => {
+                      setPassword(text);
+                      if (passwordError) setPasswordError('');
+                    }}
+                    secureTextEntry={!showPassword}
+                    autoCapitalize="none"
+                    autoCorrect={false}
+                    textContentType="oneTimeCode"
+                    autoComplete="off"
+                  />
+                  <TouchableOpacity
+                    style={styles.passwordToggle}
+                    onPress={() => setShowPassword(!showPassword)}
+                  >
+                    <Icon
+                      name={showPassword ? 'eye-off-outline' : 'eye-outline'}
+                      size={20}
+                      color={colors.primary}
+                    />
+                  </TouchableOpacity>
+                </View>
+                {passwordError ? (
+                  <Text style={styles.errorText}>{passwordError}</Text>
+                ) : null}
+              </View>
+
+              <TouchableOpacity
+                style={[
+                  styles.loginButton,
+                  isLoading && styles.loginButtonDisabled,
+                ]}
+                onPress={handleLogin}
+                disabled={isLoading}
+              >
+                <Text style={styles.loginButtonText}>
+                  {isLoading ? 'Signing in...' : 'Sign In'}
+                </Text>
               </TouchableOpacity>
             </View>
-            {passwordError ? (
-              <Text style={styles.errorText}>{passwordError}</Text>
-            ) : null}
+
+            <View style={styles.footer}>
+              <Text style={styles.footerText}>Don't have an account? </Text>
+              <TouchableOpacity onPress={() => navigation.navigate('SignUp')}>
+                <Text style={styles.signUpText}>Sign Up</Text>
+              </TouchableOpacity>
+            </View>
           </View>
-
-          <TouchableOpacity
-            style={[
-              styles.loginButton,
-              isLoading && styles.loginButtonDisabled,
-            ]}
-            onPress={handleLogin}
-            disabled={isLoading}
-          >
-            <Text style={styles.loginButtonText}>
-              {isLoading ? 'Signing in...' : 'Sign In'}
-            </Text>
-          </TouchableOpacity>
-        </View>
-
-        <View style={styles.footer}>
-          <Text style={styles.footerText}>Don't have an account? </Text>
-          <TouchableOpacity onPress={() => navigation.navigate('SignUp')}>
-            <Text style={styles.signUpText}>Sign Up</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
