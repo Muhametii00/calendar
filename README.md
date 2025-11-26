@@ -232,4 +232,4 @@ This project has been tested with the following versions:
 - [Firebase React Native Documentation](https://rnfirebase.io/)
 - [React Native Environment Setup](https://reactnative.dev/docs/environment-setup)
 
-<img width="1206" height="2622" alt="Simulator Screenshot - iPhone 16 Pro - 2025-11-26 at 14 07 36" src="https://github.com/user-attachments/assets/31a9586b-dfd6-4454-a3d9-db671aed5b17" /><img width="1206" height="2622" alt="Simulator Screenshot - iPhone 16 Pro - 2025-11-26 at 14 07 39" src="https://github.com/user-attachments/assets/e755fa1d-a209-431f-acf0-6f47ec24dbb0" />
+<img width="500" height="500" alt="Simulator Screenshot - iPhone 16 Pro - 2025-11-26 at 14 07 36" src="https://github.com/user-attachments/assets/31a9586b-dfd6-4454-a3d9-db671aed5b17" /><img width="500" height="500" alt="Simulator Screenshot - iPhone 16 Pro - 2025-11-26 at 14 07 39" src="https://github.com/user-attachments/assets/e755fa1d-a209-431f-acf0-6f47ec24dbb0" />
